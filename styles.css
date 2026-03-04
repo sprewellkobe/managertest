@@ -55,6 +55,7 @@ body {
 .page {
     display: none;
     min-height: 100vh;
+    min-height: 100dvh;
     position: relative;
     z-index: 1;
 }
@@ -768,12 +769,12 @@ body {
 .test-container {
     width: 100%;
     max-width: 680px;
-    padding: 24px;
+    padding: 20px;
     margin: 0 auto;
 }
 
 .test-header {
-    margin-bottom: 32px;
+    margin-bottom: 20px;
 }
 
 .progress-wrapper {
@@ -817,8 +818,8 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 36px 28px;
-    margin-bottom: 24px;
+    padding: 28px 24px;
+    margin-bottom: 20px;
     backdrop-filter: blur(20px);
     transition: all 0.3s ease;
     min-height: 320px;
@@ -835,14 +836,14 @@ body {
 .options-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
 }
 
 .option-item {
     display: flex;
     align-items: center;
-    gap: 14px;
-    padding: 16px 20px;
+    gap: 12px;
+    padding: 13px 16px;
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
@@ -1270,6 +1271,238 @@ body {
 .btn-share {
     display: flex;
     margin: 24px auto 0;
+}
+
+/* ============ Share Section ============ */
+.share-section {
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+    text-align: center;
+}
+
+.share-section-report {
+    margin-top: 20px;
+    margin-bottom: 30px;
+}
+
+.share-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+    opacity: 0.6;
+}
+
+.share-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.share-btn {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 10px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.02);
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 11px;
+    font-family: inherit;
+}
+
+.share-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.share-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.share-btn span {
+    font-size: 11px;
+    color: var(--text-dim);
+}
+
+.share-btn.wechat:hover {
+    border-color: #07c160;
+    background: rgba(7, 193, 96, 0.1);
+    color: #07c160;
+}
+
+.share-btn.weibo:hover {
+    border-color: #e6162d;
+    background: rgba(230, 22, 45, 0.1);
+    color: #e6162d;
+}
+
+.share-btn.xiaohongshu:hover {
+    border-color: #fe2c55;
+    background: rgba(254, 44, 85, 0.1);
+    color: #fe2c55;
+}
+
+.share-btn.douyin:hover {
+    border-color: #00f2ea;
+    background: rgba(0, 242, 234, 0.1);
+    color: #00f2ea;
+}
+
+.share-btn.copy-link:hover {
+    border-color: var(--accent-1);
+    background: rgba(108, 92, 231, 0.1);
+    color: var(--accent-1);
+}
+
+/* 分享弹窗 */
+.share-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(6px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.share-modal-overlay.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.share-modal {
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.3s ease;
+}
+
+.share-modal-overlay.active .share-modal {
+    transform: scale(1);
+}
+
+.share-modal h3 {
+    font-size: 18px;
+    color: var(--text-primary);
+    margin-bottom: 12px;
+}
+
+.share-modal p {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    line-height: 1.6;
+}
+
+.share-modal .share-text-box {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    text-align: left;
+    word-break: break-all;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.share-modal .share-modal-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.share-modal .share-modal-btns button {
+    padding: 10px 24px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    font-family: inherit;
+    transition: all 0.2s ease;
+}
+
+.share-modal .btn-copy-text {
+    background: var(--gradient-main);
+    color: white;
+}
+
+.share-modal .btn-copy-text:hover {
+    transform: scale(1.05);
+}
+
+.share-modal .btn-close-modal {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-secondary);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.share-modal .btn-close-modal:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* 手机端分享按钮适配 */
+@media (max-width: 640px) {
+    .share-buttons {
+        gap: 6px;
+    }
+
+    .share-btn {
+        padding: 5px 8px;
+        border-radius: 6px;
+    }
+
+    .share-btn svg {
+        width: 12px;
+        height: 12px;
+    }
+
+    .share-btn span {
+        font-size: 10px;
+    }
+
+    .share-modal {
+        padding: 24px 20px;
+    }
+}
+
+@media (max-width: 375px) {
+    .share-buttons {
+        gap: 4px;
+    }
+
+    .share-btn {
+        padding: 4px 6px;
+    }
+
+    .share-btn svg {
+        width: 12px;
+        height: 12px;
+    }
 }
 
 /* ============ Full Report ============ */
@@ -1797,6 +2030,22 @@ body {
 
 /* ============ Responsive ============ */
 @media (max-width: 640px) {
+    .test-container {
+        padding: 12px 14px;
+    }
+
+    .test-header {
+        margin-bottom: 14px;
+    }
+
+    .test-nav {
+        margin-top: 4px;
+    }
+
+    .options-list {
+        gap: 8px;
+    }
+
     .stats-bar {
         gap: 24px;
     }
@@ -1806,17 +2055,17 @@ body {
     }
 
     .question-card {
-        padding: 24px 18px;
-        min-height: 280px;
+        padding: 18px 14px;
     }
 
     .question-text {
-        font-size: 16px;
+        font-size: 15px;
+        margin-bottom: 14px;
     }
 
     .option-item {
-        padding: 14px 16px;
-        font-size: 14px;
+        padding: 11px 12px;
+        font-size: 13px;
     }
 
     .brief-dimensions {

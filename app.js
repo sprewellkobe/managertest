@@ -925,28 +925,144 @@ function getTeamReadinessText(teamSize, dimScores, level, experience) {
 
 // ===== 分享结果 =====
 function shareResult() {
-    const { level, totalScore } = testResult;
-    const ind = INDUSTRIES.find(i => i.id === selectedIndustry);
-    const indName = ind ? `（${ind.name}）` : '';
-    const text = `我在「管理层级上限测试」${indName}中获得了 ${totalScore} 分，管理层级上限是【${level.name}】！来测测你的管理天花板 →`;
+    shareToPlat('copy');
+}
 
-    if (navigator.share) {
-        navigator.share({
+// ===== 多平台分享 =====
+function getShareText() {
+    const pageUrl = window.location.href.split('?')[0];
+    if (testResult && testResult.level) {
+        const { level, totalScore } = testResult;
+        const ind = INDUSTRIES.find(i => i.id === selectedIndustry);
+        const indName = ind ? `（${ind.name}行业）` : '';
+        return {
             title: '管理层级上限测试',
-            text: text,
-            url: window.location.href
-        }).catch(() => {});
-    } else {
-        // 复制到剪贴板
-        navigator.clipboard.writeText(text + ' ' + window.location.href).then(() => {
-            const btn = document.querySelector('.btn-share');
-            const orig = btn.innerHTML;
-            btn.innerHTML = '✓ 已复制到剪贴板';
-            setTimeout(() => { btn.innerHTML = orig; }, 2000);
-        }).catch(() => {
-            prompt('复制以下内容分享：', text);
-        });
+            text: `我在「管理层级上限测试」${indName}中获得了 ${totalScore} 分，管理层级上限是【${level.name}】！你也来测测你的管理天花板吧 👉`,
+            url: pageUrl
+        };
     }
+    return {
+        title: '管理层级上限测试',
+        text: '这个管理层级上限测试超准！28道题测出你的管理潜力天花板，快来试试 👉',
+        url: pageUrl
+    };
+}
+
+function shareToPlat(platform) {
+    const { title, text, url } = getShareText();
+    const fullText = text + ' ' + url;
+
+    switch (platform) {
+        case 'wechat':
+            showShareModal('wechat', title, fullText);
+            break;
+        case 'weibo':
+            const weiboUrl = `https://service.weibo.com/share/share.php?title=${encodeURIComponent(text)}&url=${encodeURIComponent(url)}`;
+            window.open(weiboUrl, '_blank', 'width=600,height=500');
+            break;
+        case 'xiaohongshu':
+            showShareModal('xiaohongshu', title, fullText);
+            break;
+        case 'douyin':
+            showShareModal('douyin', title, fullText);
+            break;
+        case 'copy':
+            copyShareText(fullText);
+            break;
+    }
+}
+
+function showShareModal(platform, title, text) {
+    const platformNames = {
+        wechat: '微信',
+        xiaohongshu: '小红书',
+        douyin: '抖音'
+    };
+    const platformTips = {
+        wechat: '复制下方文案，打开微信粘贴发送给好友',
+        xiaohongshu: '复制下方文案，打开小红书发布笔记时粘贴',
+        douyin: '复制下方文案，打开抖音分享时粘贴'
+    };
+
+    let overlay = document.getElementById('share-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'share-modal-overlay';
+        overlay.className = 'share-modal-overlay';
+        overlay.onclick = function(e) {
+            if (e.target === overlay) closeShareModal();
+        };
+        document.body.appendChild(overlay);
+    }
+
+    overlay.innerHTML = `
+        <div class="share-modal">
+            <h3>分享到${platformNames[platform]}</h3>
+            <p>${platformTips[platform]}</p>
+            <div class="share-text-box">${text}</div>
+            <div class="share-modal-btns">
+                <button class="btn-copy-text" onclick="copyShareText('${text.replace(/'/g, "\\'")}'); closeShareModal();">复制文案</button>
+                <button class="btn-close-modal" onclick="closeShareModal()">关闭</button>
+            </div>
+        </div>
+    `;
+
+    requestAnimationFrame(() => {
+        overlay.classList.add('active');
+    });
+}
+
+function closeShareModal() {
+    const overlay = document.getElementById('share-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+}
+
+function copyShareText(text) {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+            showCopyToast('已复制到剪贴板');
+        }).catch(() => {
+            fallbackCopy(text);
+        });
+    } else {
+        fallbackCopy(text);
+    }
+}
+
+function fallbackCopy(text) {
+    const ta = document.createElement('textarea');
+    ta.value = text;
+    ta.style.cssText = 'position:fixed;left:-9999px;top:-9999px;opacity:0';
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+        document.execCommand('copy');
+        showCopyToast('已复制到剪贴板');
+    } catch (e) {
+        showCopyToast('复制失败，请手动复制');
+    }
+    document.body.removeChild(ta);
+}
+
+function showCopyToast(msg) {
+    let toast = document.getElementById('copy-toast');
+    if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'copy-toast';
+        toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(16,185,129,0.95);color:#fff;padding:12px 28px;border-radius:12px;font-size:14px;font-weight:600;z-index:20000;pointer-events:none;opacity:0;transition:all 0.3s ease;backdrop-filter:blur(8px);box-shadow:0 4px 20px rgba(0,0,0,0.3)';
+        document.body.appendChild(toast);
+    }
+    toast.textContent = msg;
+    requestAnimationFrame(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateX(-50%) translateY(0)';
+    });
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateX(-50%) translateY(20px)';
+    }, 2000);
 }
 
 // ===== 下载PDF =====
