@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>你的管理层级上限测试</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <!-- 粒子背景 -->
+    <canvas id="particleCanvas"></canvas>
+
+    <!-- ===== 首页 ===== -->
+    <section id="page-home" class="page active">
+        <div class="home-container">
+            <div class="badge">专业管理能力评估</div>
+            <h1 class="glitch-title" data-text="管理层级上限测试">管理层级上限测试</h1>
+            <p class="subtitle">探索你的管理潜能天花板</p>
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-num" data-target="28">0</span>
+                    <span class="stat-label">专业题目</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" data-target="6">0</span>
+                    <span class="stat-label">核心维度</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-num" data-target="5">0</span>
+                    <span class="stat-label">管理层级</span>
+                </div>
+            </div>
+
+            <!-- 6大核心维度展示 -->
+            <div class="home-section" style="text-align:left">
+                <h3 class="home-section-title">6 大核心维度</h3>
+                <div class="dimension-showcase" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+                    <div class="dim-show-item" style="--dim-color:#6c5ce7;display:flex;flex-direction:row;align-items:center">
+                        <span class="dim-show-icon">🎯</span>
+                        <span class="dim-show-name">战略思维</span>
+                    </div>
+                    <div class="dim-show-item" style="--dim-color:#a855f7;display:flex;flex-direction:row;align-items:center">
+                        <span class="dim-show-icon">👑</span>
+                        <span class="dim-show-name">领导力</span>
+                    </div>
+                    <div class="dim-show-item" style="--dim-color:#06b6d4;display:flex;flex-direction:row;align-items:center">
+                        <span class="dim-show-icon">⚡</span>
+                        <span class="dim-show-name">决策能力</span>
+                    </div>
+                    <div class="dim-show-item" style="--dim-color:#f59e0b;display:flex;flex-direction:row;align-items:center">
+                        <span class="dim-show-icon">🗣️</span>
+                        <span class="dim-show-name">沟通影响</span>
+                    </div>
+                    <div class="dim-show-item" style="--dim-color:#10b981;display:flex;flex-direction:row;align-items:center">
+                        <span class="dim-show-icon">🚀</span>
+                        <span class="dim-show-name">执行推动</span>
+                    </div>
+                    <div class="dim-show-item" style="--dim-color:#ef4444;display:flex;flex-direction:row;align-items:center">
+                        <span class="dim-show-icon">🧬</span>
+                        <span class="dim-show-name">自我进化</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 5大管理层级展示 -->
+            <div class="home-section" style="text-align:left">
+                <h3 class="home-section-title">5 大管理层级</h3>
+                <div class="level-showcase" style="display:flex;flex-direction:column;gap:8px">
+                    <div class="level-show-item" style="display:flex;flex-direction:row;align-items:center;gap:14px">
+                        <div class="level-show-badge" style="background:linear-gradient(135deg,#64748b,#94a3b8);width:36px;height:36px;min-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">L1</div>
+                        <div class="level-show-info" style="display:flex;flex-direction:row;align-items:center;gap:8px">
+                            <span class="level-show-name">基层执行者</span>
+                            <span class="level-show-desc">个人贡献者 / 基层员工</span>
+                        </div>
+                    </div>
+                    <div class="level-show-item" style="display:flex;flex-direction:row;align-items:center;gap:14px">
+                        <div class="level-show-badge" style="background:linear-gradient(135deg,#10b981,#34d399);width:36px;height:36px;min-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">L2</div>
+                        <div class="level-show-info" style="display:flex;flex-direction:row;align-items:center;gap:8px">
+                            <span class="level-show-name">团队主管</span>
+                            <span class="level-show-desc">主管 / Team Leader</span>
+                        </div>
+                    </div>
+                    <div class="level-show-item" style="display:flex;flex-direction:row;align-items:center;gap:14px">
+                        <div class="level-show-badge" style="background:linear-gradient(135deg,#6c5ce7,#a855f7);width:36px;height:36px;min-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">L3</div>
+                        <div class="level-show-info" style="display:flex;flex-direction:row;align-items:center;gap:8px">
+                            <span class="level-show-name">高级经理</span>
+                            <span class="level-show-desc">经理 / 高级经理</span>
+                        </div>
+                    </div>
+                    <div class="level-show-item" style="display:flex;flex-direction:row;align-items:center;gap:14px">
+                        <div class="level-show-badge" style="background:linear-gradient(135deg,#f59e0b,#fbbf24);width:36px;height:36px;min-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">L4</div>
+                        <div class="level-show-info" style="display:flex;flex-direction:row;align-items:center;gap:8px">
+                            <span class="level-show-name">总监/副总裁</span>
+                            <span class="level-show-desc">总监 / VP</span>
+                        </div>
+                    </div>
+                    <div class="level-show-item" style="display:flex;flex-direction:row;align-items:center;gap:14px">
+                        <div class="level-show-badge" style="background:linear-gradient(135deg,#ef4444,#f97316);width:36px;height:36px;min-width:36px;border-radius:50%;display:flex;align-items:center;justify-content:center">L5</div>
+                        <div class="level-show-info" style="display:flex;flex-direction:row;align-items:center;gap:8px">
+                            <span class="level-show-name">CEO / 合伙人</span>
+                            <span class="level-show-desc">CEO / 创始人 / 合伙人</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-primary btn-glow" onclick="showPage('page-industry')">
+                <span>开始测评</span>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M5 12h14M12 5l7 7-7 7"/>
+                </svg>
+            </button>
+            <p class="hint">约需 5-8 分钟 · 请在安静环境下作答</p>
+        </div>
+    </section>
+
+    <!-- ===== 行业选择页 ===== -->
+    <section id="page-industry" class="page">
+        <div class="industry-container">
+            <div class="industry-header">
+                <h2 class="industry-title">选择你所在的行业</h2>
+                <p class="industry-subtitle">我们将根据你的行业背景，定制专属的测评题目</p>
+            </div>
+            <div class="industry-grid" id="industry-grid"></div>
+            <button class="btn-skip-industry" onclick="skipIndustry()">
+                暂不选择，跳过此步 →
+            </button>
+            <p class="industry-hint">选择行业后将自动进入测评，也可跳过直接开始</p>
+        </div>
+    </section>
+
+    <!-- ===== 测评页 ===== -->
+    <section id="page-test" class="page">
+        <div class="test-container">
+            <div class="test-header">
+                <div class="progress-wrapper">
+                    <div class="progress-info">
+                        <span id="progress-text">1 / 28</span>
+                        <span id="progress-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                <div class="dimension-tag" id="dimension-tag">战略思维</div>
+            </div>
+
+            <div class="question-card" id="question-card">
+                <h2 class="question-text" id="question-text"></h2>
+                <div class="options-list" id="options-list"></div>
+            </div>
+
+            <div class="test-nav">
+                <button class="btn-secondary" id="btn-prev" onclick="prevQuestion()" disabled>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                    上一题
+                </button>
+                <button class="btn-primary" id="btn-next" onclick="nextQuestion()" disabled>
+                    下一题
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 期望设定页 ===== -->
+    <section id="page-expectation" class="page">
+        <div class="expectation-container">
+            <div class="expectation-header">
+                <h2 class="expectation-title">设定你的管理目标</h2>
+                <p class="expectation-subtitle">告诉我们你的职业期望，我们将为你生成个性化的管理路径建议</p>
+            </div>
+
+            <div class="expectation-form">
+                <div class="exp-field">
+                    <label class="exp-label">🎯 你期望达到的管理职位</label>
+                    <div class="exp-options" id="exp-position">
+                        <div class="exp-option" data-value="teamlead" onclick="selectExpOption('position','teamlead',this)">
+                            <div class="exp-opt-icon">👥</div>
+                            <div class="exp-opt-name">团队主管</div>
+                            <div class="exp-opt-desc">带5-15人团队</div>
+                        </div>
+                        <div class="exp-option" data-value="manager" onclick="selectExpOption('position','manager',this)">
+                            <div class="exp-opt-icon">📋</div>
+                            <div class="exp-opt-name">部门经理</div>
+                            <div class="exp-opt-desc">管理一个部门</div>
+                        </div>
+                        <div class="exp-option" data-value="director" onclick="selectExpOption('position','director',this)">
+                            <div class="exp-opt-icon">🏢</div>
+                            <div class="exp-opt-name">总监/VP</div>
+                            <div class="exp-opt-desc">领导多个部门</div>
+                        </div>
+                        <div class="exp-option" data-value="cxo" onclick="selectExpOption('position','cxo',this)">
+                            <div class="exp-opt-icon">👑</div>
+                            <div class="exp-opt-name">CEO/合伙人</div>
+                            <div class="exp-opt-desc">掌舵整个企业</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exp-field">
+                    <label class="exp-label">⏰ 你期望在多长时间内达成</label>
+                    <div class="exp-options" id="exp-timeline">
+                        <div class="exp-option small" data-value="1" onclick="selectExpOption('timeline','1',this)">
+                            <div class="exp-opt-name">1年内</div>
+                        </div>
+                        <div class="exp-option small" data-value="3" onclick="selectExpOption('timeline','3',this)">
+                            <div class="exp-opt-name">1-3年</div>
+                        </div>
+                        <div class="exp-option small" data-value="5" onclick="selectExpOption('timeline','5',this)">
+                            <div class="exp-opt-name">3-5年</div>
+                        </div>
+                        <div class="exp-option small" data-value="10" onclick="selectExpOption('timeline','10',this)">
+                            <div class="exp-opt-name">5-10年</div>
+                        </div>
+                        <div class="exp-option small" data-value="0" onclick="selectExpOption('timeline','0',this)">
+                            <div class="exp-opt-name">不着急</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exp-field">
+                    <label class="exp-label">👥 你期望管理多少人</label>
+                    <div class="exp-options" id="exp-teamsize">
+                        <div class="exp-option small" data-value="10" onclick="selectExpOption('teamsize','10',this)">
+                            <div class="exp-opt-name">5-10人</div>
+                        </div>
+                        <div class="exp-option small" data-value="30" onclick="selectExpOption('teamsize','30',this)">
+                            <div class="exp-opt-name">10-30人</div>
+                        </div>
+                        <div class="exp-option small" data-value="100" onclick="selectExpOption('teamsize','100',this)">
+                            <div class="exp-opt-name">30-100人</div>
+                        </div>
+                        <div class="exp-option small" data-value="500" onclick="selectExpOption('teamsize','500',this)">
+                            <div class="exp-opt-name">100-500人</div>
+                        </div>
+                        <div class="exp-option small" data-value="1000" onclick="selectExpOption('teamsize','1000',this)">
+                            <div class="exp-opt-name">500人以上</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="exp-field">
+                    <label class="exp-label">💼 你当前的管理经验</label>
+                    <div class="exp-options" id="exp-experience">
+                        <div class="exp-option small" data-value="none" onclick="selectExpOption('experience','none',this)">
+                            <div class="exp-opt-name">暂无经验</div>
+                        </div>
+                        <div class="exp-option small" data-value="junior" onclick="selectExpOption('experience','junior',this)">
+                            <div class="exp-opt-name">1-2年</div>
+                        </div>
+                        <div class="exp-option small" data-value="mid" onclick="selectExpOption('experience','mid',this)">
+                            <div class="exp-opt-name">3-5年</div>
+                        </div>
+                        <div class="exp-option small" data-value="senior" onclick="selectExpOption('experience','senior',this)">
+                            <div class="exp-opt-name">5年以上</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="exp-actions">
+                <button class="btn-primary btn-glow" id="btn-submit-exp" onclick="submitExpectation()" disabled>
+                    <span>生成我的专属报告</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M5 12h14M12 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <button class="btn-skip-industry" onclick="skipExpectation()">
+                    跳过，直接查看报告 →
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 计算中 ===== -->
+    <section id="page-loading" class="page">
+        <div class="loading-container">
+            <div class="dna-loader">
+                <div class="dna-strand"></div>
+                <div class="dna-strand"></div>
+                <div class="dna-strand"></div>
+                <div class="dna-strand"></div>
+                <div class="dna-strand"></div>
+            </div>
+            <h2 class="loading-title">正在分析你的管理基因...</h2>
+            <p class="loading-sub" id="loading-status">综合评估6大维度数据</p>
+            <div class="loading-bar">
+                <div class="loading-fill" id="loading-fill"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== 简略报告页 ===== -->
+    <section id="page-brief" class="page">
+        <div class="report-container">
+            <div class="report-header">
+                <div class="level-badge" id="brief-level-badge">L3</div>
+                <h1 class="report-title" id="brief-title">你的管理层级上限</h1>
+                <p class="report-level-name" id="brief-level-name">高级经理</p>
+                <p class="report-score">综合得分：<span id="brief-score">0</span> / 140</p>
+            </div>
+
+            <div class="radar-section">
+                <h3 class="section-title">能力雷达图</h3>
+                <canvas id="radarChart" width="350" height="350"></canvas>
+            </div>
+
+            <div class="brief-dimensions" id="brief-dimensions"></div>
+
+            <div class="blur-preview">
+                <div class="blur-content">
+                    <h3>完整报告包含</h3>
+                    <ul>
+                        <li>📊 各维度详细分析与评分解读</li>
+                        <li>🎯 你的管理风格深度画像</li>
+                        <li>⚡ 突破当前层级的关键策略</li>
+                        <li>📈 个性化发展路径规划</li>
+                        <li>💡 针对性行动建议（可立即执行）</li>
+                    </ul>
+                </div>
+                <div class="blur-overlay">
+                    <div class="lock-icon">🔒</div>
+                    <p>输入下载码查看完整报告</p>
+                </div>
+            </div>
+
+            <div class="unlock-section">
+                <h3>解锁完整报告</h3>
+                <p class="unlock-desc">在闲鱼搜索<strong>"管理层级上限测试"</strong>购买下载码</p>
+                <div class="code-input-wrapper">
+                    <input type="text" id="download-code" placeholder="请输入下载码" maxlength="16" autocomplete="off">
+                    <button class="btn-primary" onclick="verifyCode()">验证并解锁</button>
+                </div>
+                <p class="error-msg" id="code-error"></p>
+            </div>
+
+            <button class="btn-secondary btn-share" onclick="shareResult()">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                </svg>
+                分享简略结果
+            </button>
+        </div>
+    </section>
+
+    <!-- ===== 完整报告页 ===== -->
+    <section id="page-full" class="page">
+        <div class="report-container full-report">
+            <div class="report-header">
+                <div class="crown-icon">👑</div>
+                <h1>完整管理能力评估报告</h1>
+                <div class="level-badge large" id="full-level-badge">L3</div>
+                <p class="report-level-name" id="full-level-name">高级经理</p>
+                <p class="report-score">综合得分：<span id="full-score">0</span> / 140</p>
+            </div>
+
+            <div class="radar-section">
+                <h3 class="section-title">能力雷达图</h3>
+                <canvas id="fullRadarChart" width="350" height="350"></canvas>
+            </div>
+
+            <div id="full-dimensions" class="full-dimensions"></div>
+
+            <div id="full-profile" class="profile-section"></div>
+
+            <div id="full-strategy" class="strategy-section"></div>
+
+            <div id="full-action" class="action-section"></div>
+
+            <div id="full-path-advice" class="path-advice-section"></div>
+
+            <button class="btn-primary btn-glow btn-download" onclick="downloadPDF()">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                下载PDF报告
+            </button>
+        </div>
+    </section>
+
+    <script src="questions.js"></script>
+    <script src="question-bank.js"></script>
+    <script src="industry-questions.js"></script>
+    <script src="scoring.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
