@@ -190,7 +190,7 @@ function selectOption(idx, score) {
 
     // 自动跳转下一题（延迟一下让用户看到选中效果）
     if (currentQuestion < QUESTIONS.length - 1) {
-        setTimeout(() => nextQuestion(), 400);
+        setTimeout(() => nextQuestion(), 600);
     }
 }
 
@@ -285,15 +285,16 @@ function showLoadingAndReport() {
     showPage('page-loading');
 
     const statusTexts = [
-        '正在分析战略思维维度...',
-        '正在评估领导力潜能...',
-        '正在测算决策能力指数...',
-        '正在解析沟通影响力...',
-        '正在计算执行推动力...',
-        '正在评估自我进化潜力...',
-        '正在规划管理晋升路径...',
-        '正在生成综合评估报告...',
-        '报告即将呈现...'
+        'AI 正在解析你的答题模式...',
+        'AI 正在分析战略思维维度...',
+        'AI 正在评估领导力潜能...',
+        'AI 正在测算决策能力指数...',
+        'AI 正在解析沟通影响力...',
+        'AI 正在计算执行推动力...',
+        'AI 正在评估自我进化潜力...',
+        'AI 正在交叉验证 6 大维度数据...',
+        'AI 正在生成个性化深度报告...',
+        'AI 分析完成，报告即将呈现...'
     ];
 
     let step = 0;
@@ -340,19 +341,71 @@ function showBriefReport() {
     dimContainer.innerHTML = '';
 
     const colors = ['#6c5ce7', '#a855f7', '#06b6d4', '#f59e0b', '#10b981', '#ef4444'];
+
+    // 找到得分比例最低的维度（短板）
+    let worstDimId = null, worstRatio = 1;
+    DIMENSIONS.forEach(dim => {
+        const s = dimScores[dim.id];
+        const m = (dim.id === 'communication' || dim.id === 'execution') ? 20 : 25;
+        const r = s / m;
+        if (r < worstRatio) { worstRatio = r; worstDimId = dim.id; }
+    });
+
     DIMENSIONS.forEach((dim, i) => {
         const score = dimScores[dim.id];
         const maxScore = (dim.id === 'communication' || dim.id === 'execution') ? 20 : 25;
         const percent = (score / maxScore) * 100;
+        const analysis = getDimensionAnalysis(dim.id, score);
+
+        // 根据等级生成简短标签和提示
+        let levelLabel, levelClass, briefHint;
+        if (analysis.level === 'high') {
+            levelLabel = '优秀';
+            levelClass = 'level-high';
+            briefHint = '已是核心优势，完整报告含进阶策略';
+        } else if (analysis.level === 'mid') {
+            levelLabel = '中等';
+            levelClass = 'level-mid';
+            briefHint = '有提升空间，完整报告含突破方法';
+        } else {
+            levelLabel = '待提升';
+            levelClass = 'level-low';
+            briefHint = '关键短板，完整报告含改善路径';
+        }
+
+        // 如果是最弱维度，额外展开分析
+        let expandedAnalysis = '';
+        if (dim.id === worstDimId && analysis.level !== 'high') {
+            // 截取分析描述的前60字作为引子
+            const previewDesc = analysis.desc.length > 60 ? analysis.desc.substring(0, 60) + '...' : analysis.desc;
+            // 截取建议的前40字作为引子
+            const previewAdvice = analysis.advice.length > 40 ? analysis.advice.substring(0, 40) + '...' : analysis.advice;
+            expandedAnalysis = `
+                <div class="dim-expanded">
+                    <div class="dim-expanded-tag">⚡ AI 深度诊断</div>
+                    <p class="dim-expanded-desc">${previewDesc}</p>
+                    <div class="dim-expanded-advice">
+                        <span class="advice-label">💡 改善方向：</span>
+                        <span class="advice-text">${previewAdvice}</span>
+                    </div>
+                    <div class="dim-expanded-lock">🔓 解锁完整报告查看 ${dim.name} 的系统性提升方案 →</div>
+                </div>
+            `;
+        }
 
         const card = document.createElement('div');
-        card.className = 'dim-card';
+        card.className = 'dim-card' + (dim.id === worstDimId && analysis.level !== 'high' ? ' dim-card-expanded' : '');
         card.innerHTML = `
             <div class="dim-name">${dim.icon} ${dim.name}</div>
             <div class="dim-score-bar">
                 <div class="dim-score-fill" style="width: 0%; background: ${colors[i]}"></div>
             </div>
-            <div class="dim-score-text">${score} / ${maxScore}</div>
+            <div class="dim-brief-row">
+                <span class="dim-level-tag ${levelClass}">${levelLabel}</span>
+                <span class="dim-percent">${Math.round(percent)}%</span>
+            </div>
+            <div class="dim-brief-hint">🔒 ${briefHint}</div>
+            ${expandedAnalysis}
         `;
         dimContainer.appendChild(card);
 

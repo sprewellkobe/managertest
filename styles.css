@@ -618,17 +618,17 @@ body {
 .expectation-container {
     width: 100%;
     max-width: 760px;
-    padding: 40px 24px;
+    padding: 24px 20px;
     margin: 0 auto;
 }
 
 .expectation-header {
     text-align: center;
-    margin-bottom: 36px;
+    margin-bottom: 24px;
 }
 
 .expectation-title {
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 900;
     background: var(--gradient-main);
     -webkit-background-clip: text;
@@ -645,18 +645,18 @@ body {
 .expectation-form {
     display: flex;
     flex-direction: column;
-    gap: 32px;
-    margin-bottom: 32px;
+    gap: 22px;
+    margin-bottom: 22px;
 }
 
 .exp-field {
     display: flex;
     flex-direction: column;
-    gap: 14px;
+    gap: 10px;
 }
 
 .exp-label {
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text-main);
 }
@@ -671,7 +671,7 @@ body {
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
-    padding: 20px 12px;
+    padding: 14px 10px;
     text-align: center;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -705,8 +705,8 @@ body {
 }
 
 .exp-opt-icon {
-    font-size: 28px;
-    margin-bottom: 8px;
+    font-size: 24px;
+    margin-bottom: 4px;
     position: relative;
     z-index: 1;
 }
@@ -727,7 +727,7 @@ body {
 }
 
 .exp-option.small {
-    padding: 14px 8px;
+    padding: 10px 8px;
 }
 
 .exp-option.small .exp-opt-name {
@@ -738,7 +738,7 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .exp-actions .btn-primary {
@@ -754,15 +754,16 @@ body {
 @media (max-width: 640px) {
     .exp-options {
         grid-template-columns: repeat(2, 1fr);
-        gap: 10px;
+        gap: 8px;
     }
 
     .exp-option {
-        padding: 16px 10px;
+        padding: 12px 8px;
     }
 
     .exp-opt-icon {
-        font-size: 22px;
+        font-size: 20px;
+        margin-bottom: 2px;
     }
 
     .exp-opt-name {
@@ -770,7 +771,16 @@ body {
     }
 
     .expectation-title {
-        font-size: 22px;
+        font-size: 20px;
+    }
+
+    .expectation-header {
+        margin-bottom: 16px;
+    }
+
+    .expectation-form {
+        gap: 16px;
+        margin-bottom: 16px;
     }
 }
 
@@ -960,13 +970,57 @@ body {
     padding: 40px 24px;
 }
 
-.dna-loader {
+.ai-brain-icon {
+    margin: 0 auto 20px;
+    width: 64px;
+    height: 64px;
+    animation: aiPulse 2s ease-in-out infinite;
+}
+
+@keyframes aiPulse {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.1); opacity: 1; }
+}
+
+.ai-badge {
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.1);
+    padding: 4px 14px;
+    border-radius: 20px;
+    margin-bottom: 16px;
+    letter-spacing: 1px;
+    border: 1px solid rgba(108, 92, 231, 0.2);
+}
+
+.ai-thinking {
     display: flex;
     justify-content: center;
-    gap: 8px;
-    margin-bottom: 40px;
-    height: 60px;
-    align-items: center;
+    gap: 6px;
+    margin-bottom: 24px;
+}
+
+.thinking-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #6c5ce7;
+    animation: thinkingBounce 1.4s ease-in-out infinite;
+}
+
+.thinking-dot:nth-child(2) { animation-delay: 0.2s; }
+.thinking-dot:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes thinkingBounce {
+    0%, 80%, 100% { transform: scale(0.6); opacity: 0.3; }
+    40% { transform: scale(1.2); opacity: 1; }
+}
+
+.dna-loader {
+    display: none;
+}
 }
 
 .dna-strand {
@@ -1025,36 +1079,36 @@ body {
 .report-container {
     width: 100%;
     max-width: 720px;
-    padding: 40px 24px 60px;
+    padding: 24px 20px 40px;
     margin: 0 auto;
 }
 
 .report-header {
     text-align: center;
-    margin-bottom: 40px;
-    padding-top: 40px;
+    margin-bottom: 28px;
+    padding-top: 24px;
 }
 
 .level-badge {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 80px;
-    height: 80px;
+    width: 68px;
+    height: 68px;
     border-radius: 50%;
     background: var(--gradient-main);
-    font-size: 28px;
+    font-size: 24px;
     font-weight: 900;
     color: white;
-    margin-bottom: 20px;
+    margin-bottom: 14px;
     box-shadow: 0 0 40px rgba(108, 92, 231, 0.4);
     animation: pulse 2s ease-in-out infinite;
 }
 
 .level-badge.large {
-    width: 100px;
-    height: 100px;
-    font-size: 36px;
+    width: 84px;
+    height: 84px;
+    font-size: 30px;
 }
 
 @keyframes pulse {
@@ -1070,7 +1124,7 @@ body {
 }
 
 .report-level-name {
-    font-size: 32px;
+    font-size: 28px;
     font-weight: 900;
     background: var(--gradient-main);
     -webkit-background-clip: text;
@@ -1091,14 +1145,14 @@ body {
 }
 
 .crown-icon {
-    font-size: 48px;
-    margin-bottom: 12px;
+    font-size: 36px;
+    margin-bottom: 8px;
 }
 
 /* Radar */
 .radar-section {
     text-align: center;
-    margin-bottom: 40px;
+    margin-bottom: 28px;
 }
 
 .radar-section canvas {
@@ -1116,8 +1170,8 @@ body {
 .brief-dimensions {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-bottom: 32px;
+    gap: 10px;
+    margin-bottom: 24px;
 }
 
 .dim-card {
@@ -1158,12 +1212,112 @@ body {
     color: var(--text-primary);
 }
 
+.dim-brief-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+}
+
+.dim-level-tag {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 2px 8px;
+    border-radius: 4px;
+    letter-spacing: 0.5px;
+}
+
+.dim-level-tag.level-high {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+}
+
+.dim-level-tag.level-mid {
+    background: rgba(245, 158, 11, 0.15);
+    color: #f59e0b;
+}
+
+.dim-level-tag.level-low {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+}
+
+.dim-percent {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.dim-brief-hint {
+    font-size: 11px;
+    color: var(--text-dim);
+    opacity: 0.7;
+    line-height: 1.4;
+}
+
+.dim-card-expanded {
+    grid-column: 1 / -1;
+    border: 1px solid rgba(108, 92, 231, 0.3);
+    background: linear-gradient(135deg, rgba(108, 92, 231, 0.06), rgba(168, 85, 247, 0.04));
+}
+
+.dim-expanded {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(108, 92, 231, 0.2);
+}
+
+.dim-expanded-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 700;
+    color: #6c5ce7;
+    background: rgba(108, 92, 231, 0.1);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+}
+
+.dim-expanded-desc {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 8px;
+}
+
+.dim-expanded-advice {
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 8px;
+}
+
+.advice-label {
+    color: #f59e0b;
+    font-weight: 600;
+}
+
+.advice-text {
+    color: var(--text-secondary);
+}
+
+.dim-expanded-lock {
+    font-size: 12px;
+    color: #6c5ce7;
+    font-weight: 600;
+    text-align: center;
+    padding: 6px 12px;
+    background: rgba(108, 92, 231, 0.08);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
 /* Blur Preview */
 .blur-preview {
     position: relative;
     border-radius: var(--radius);
     overflow: hidden;
-    margin-bottom: 40px;
+    margin-bottom: 28px;
 }
 
 .blur-content {
@@ -1216,7 +1370,7 @@ body {
 /* Unlock Section */
 .unlock-section {
     text-align: center;
-    padding: 32px;
+    padding: 24px;
     background: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: var(--radius);
@@ -1279,7 +1433,7 @@ body {
 
 .btn-share {
     display: flex;
-    margin: 24px auto 0;
+    margin: 16px auto 0;
 }
 
 /* ============ Share Section ============ */
@@ -2082,11 +2236,27 @@ body {
     }
 
     .report-container {
-        padding: 24px 16px 40px;
+        padding: 16px 14px 30px;
+    }
+
+    .report-header {
+        margin-bottom: 20px;
+        padding-top: 16px;
     }
 
     .report-level-name {
-        font-size: 26px;
+        font-size: 24px;
+    }
+
+    .level-badge {
+        width: 56px;
+        height: 56px;
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .radar-section {
+        margin-bottom: 20px;
     }
 
     .code-input-wrapper {
