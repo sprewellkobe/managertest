@@ -547,14 +547,46 @@ function drawRadarChart(canvasId, dimScores) {
 
 // ===== 验证下载码 =====
 function verifyCode() {
-    const code = document.getElementById('download-code').value;
+    const code = document.getElementById('download-code').value.trim().toUpperCase();
     const errorEl = document.getElementById('code-error');
 
-    if (!code.trim()) {
+    if (!code) {
         errorEl.textContent = '请输入下载码';
         return;
     }
 
+    // 优先从 localStorage 下载码库验证
+    const codesData = localStorage.getItem('mgr_download_codes');
+    if (codesData) {
+        const allCodes = JSON.parse(codesData);
+        const found = allCodes.find(c => c.code === code);
+        if (found) {
+            if (found.status === 'disabled') {
+                errorEl.style.color = '#ef4444';
+                errorEl.textContent = '此下载码已被禁用';
+                return;
+            }
+            if (found.status === 'used') {
+                // 已使用过的码也允许再次查看报告
+                errorEl.style.color = '#10b981';
+                errorEl.textContent = '✓ 验证成功！正在解锁完整报告...';
+                setTimeout(() => showFullReport(), 1000);
+                return;
+            }
+            if (found.status === 'unused') {
+                // 标记为已使用
+                found.status = 'used';
+                found.usedAt = new Date().toISOString();
+                localStorage.setItem('mgr_download_codes', JSON.stringify(allCodes));
+                errorEl.style.color = '#10b981';
+                errorEl.textContent = '✓ 验证成功！正在解锁完整报告...';
+                setTimeout(() => showFullReport(), 1000);
+                return;
+            }
+        }
+    }
+
+    // 回退到算法验证（兼容未通过管理后台生成的码）
     if (verifyDownloadCode(code)) {
         errorEl.style.color = '#10b981';
         errorEl.textContent = '✓ 验证成功！正在解锁完整报告...';
@@ -562,7 +594,6 @@ function verifyCode() {
     } else {
         errorEl.style.color = '#ef4444';
         errorEl.textContent = '下载码无效，请检查后重试';
-        // 输入框震动效果
         const input = document.getElementById('download-code');
         input.style.animation = 'shake 0.5s ease';
         setTimeout(() => { input.style.animation = ''; }, 500);

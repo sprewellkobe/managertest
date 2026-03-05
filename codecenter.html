@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>下载码管理中心</title>
+    <link rel="stylesheet" href="codecenter.css">
+</head>
+<body>
+    <div class="admin-container">
+        <!-- 侧边栏 -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <span class="logo-icon">🔑</span>
+                    <span class="logo-text">下载码管理</span>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="nav-item active" data-tab="codes" onclick="switchTab('codes', this)">
+                    <span class="nav-icon">📋</span> 下载码管理
+                </a>
+                <a href="#" class="nav-item" data-tab="generate" onclick="switchTab('generate', this)">
+                    <span class="nav-icon">➕</span> 生成下载码
+                </a>
+                <a href="#" class="nav-item" data-tab="settings" onclick="switchTab('settings', this)">
+                    <span class="nav-icon">⚙️</span> 系统设置
+                </a>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="index.html" class="nav-item">
+                    <span class="nav-icon">↩️</span> 返回测评
+                </a>
+            </div>
+        </aside>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 顶部栏 -->
+            <header class="topbar">
+                <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+                <h1 class="page-title" id="page-title">下载码管理</h1>
+                <div class="topbar-actions">
+                    <span class="admin-badge">管理员</span>
+                </div>
+            </header>
+
+            <!-- 下载码管理（含轻量统计 + 列表） -->
+            <section id="tab-codes" class="tab-content active">
+                <!-- 轻量统计条 -->
+                <div class="stats-bar">
+                    <div class="stat-chip">
+                        <span class="chip-dot" style="background: #6c5ce7;"></span>
+                        总计 <strong id="stat-total">0</strong>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="chip-dot" style="background: #10b981;"></span>
+                        未使用 <strong id="stat-unused">0</strong>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="chip-dot" style="background: #f59e0b;"></span>
+                        已使用 <strong id="stat-used">0</strong>
+                    </div>
+                    <div class="stat-chip">
+                        <span class="chip-dot" style="background: #ef4444;"></span>
+                        已禁用 <strong id="stat-disabled">0</strong>
+                    </div>
+                </div>
+
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <input type="text" class="search-input" id="search-code" placeholder="搜索下载码..." oninput="filterCodes()">
+                        <select class="filter-select" id="filter-status" onchange="filterCodes()">
+                            <option value="all">全部状态</option>
+                            <option value="unused">未使用</option>
+                            <option value="used">已使用</option>
+                            <option value="disabled">已禁用</option>
+                        </select>
+                    </div>
+                    <div class="toolbar-right">
+                        <button class="btn btn-outline" onclick="exportCodes()">📥 导出 CSV</button>
+                        <button class="btn btn-outline" onclick="copyAllUnused()">📋 复制未使用</button>
+                        <button class="btn btn-danger" onclick="batchDisable()">🚫 批量禁用</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-body table-container">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th><input type="checkbox" id="select-all" onchange="toggleSelectAll()"></th>
+                                    <th>序号</th>
+                                    <th>下载码</th>
+                                    <th class="sortable-th" onclick="toggleSort('status')">状态 <span class="sort-arrow" id="sort-arrow-status"></span></th>
+                                    <th class="sortable-th" onclick="toggleSort('createdAt')">创建时间 <span class="sort-arrow" id="sort-arrow-createdAt"></span></th>
+                                    <th class="sortable-th" onclick="toggleSort('usedAt')">使用时间 <span class="sort-arrow" id="sort-arrow-usedAt"></span></th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="codes-table-body">
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="pagination"></div>
+                </div>
+            </section>
+
+            <!-- 生成下载码 -->
+            <section id="tab-generate" class="tab-content">
+                <div class="card" style="max-width: 560px;">
+                    <div class="card-header">
+                        <h3>批量生成下载码</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>生成数量</label>
+                            <input type="number" class="form-input" id="gen-count" value="20" min="1" max="500">
+                            <p class="form-hint">单次最多生成 500 个</p>
+                        </div>
+                        <div class="form-group">
+                            <label>备注标签（可选）</label>
+                            <input type="text" class="form-input" id="gen-tag" placeholder="如：第二批、VIP专属">
+                        </div>
+                        <button class="btn btn-primary btn-lg" onclick="generateNewCodes()">🔑 立即生成</button>
+                        <div id="gen-result" class="gen-result" style="display:none;"></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 系统设置 -->
+            <section id="tab-settings" class="tab-content">
+                <div class="card" style="max-width: 560px;">
+                    <div class="card-header">
+                        <h3>系统设置</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label>修改管理密码</label>
+                            <input type="password" class="form-input" id="admin-password" placeholder="输入新密码（至少6位）">
+                            <p class="form-hint">修改后需使用新密码登录</p>
+                        </div>
+                        <button class="btn btn-primary" onclick="savePassword()">更新密码</button>
+
+                        <hr class="divider">
+
+                        <div class="form-group">
+                            <label>数据管理</label>
+                            <div class="btn-group">
+                                <button class="btn btn-outline" onclick="exportAllData()">📥 导出全部数据</button>
+                                <button class="btn btn-outline" onclick="importData()">📤 导入数据</button>
+                                <input type="file" id="import-file" accept=".json" style="display:none" onchange="handleImport(event)">
+                            </div>
+                        </div>
+
+                        <hr class="divider">
+
+                        <div class="form-group">
+                            <label class="danger-label">危险操作</label>
+                            <button class="btn btn-danger" onclick="resetAllData()">🗑️ 重置所有数据</button>
+                            <p class="form-hint" style="color: #ef4444;">此操作不可恢复，将清除所有下载码数据</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Toast 提示 -->
+    <div class="toast-container" id="toast-container"></div>
+
+    <!-- 登录页 -->
+    <div class="login-overlay" id="login-overlay">
+        <div class="login-card">
+            <div class="login-icon">🔐</div>
+            <h2 class="login-title">管理后台登录</h2>
+            <p class="login-desc">请输入管理员密码以继续</p>
+
+            <!-- 登录表单 -->
+            <div id="login-form">
+                <div class="login-field">
+                    <input type="password" class="login-input" id="login-password" placeholder="输入管理员密码" onkeydown="if(event.key==='Enter')handleLogin()">
+                </div>
+                <div class="login-error" id="login-error"></div>
+                <button class="btn btn-primary btn-lg login-btn" onclick="handleLogin()">登 录</button>
+            </div>
+
+            <!-- 修改密码表单（首次登录引导） -->
+            <div id="change-pwd-form" style="display:none;">
+                <div class="change-pwd-notice">
+                    <span class="notice-icon">⚠️</span>
+                    <span>首次登录，请立即修改默认密码以确保安全</span>
+                </div>
+                <div class="login-field">
+                    <label class="login-label">新密码</label>
+                    <input type="password" class="login-input" id="new-password" placeholder="设置新的管理密码（至少6位）">
+                </div>
+                <div class="login-field">
+                    <label class="login-label">确认密码</label>
+                    <input type="password" class="login-input" id="confirm-password" placeholder="再次输入新密码" onkeydown="if(event.key==='Enter')handleChangePwd()">
+                </div>
+                <div class="login-error" id="change-pwd-error"></div>
+                <button class="btn btn-primary btn-lg login-btn" onclick="handleChangePwd()">确认修改并进入</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="codecenter.js"></script>
+</body>
+</html>
