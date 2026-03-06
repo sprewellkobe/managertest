@@ -1,8 +1,5 @@
-// ===== 下载码管理中心 =====
+// ===== 下载码管理中心（Supabase 版） =====
 
-const STORAGE_KEY = 'mgr_download_codes';
-const PASSWORD_KEY = 'mgr_admin_password';
-const PWD_CHANGED_KEY = 'mgr_pwd_changed'; // 标记是否已修改过初始密码
 const DEFAULT_PASSWORD = '123456';
 const PAGE_SIZE = 20;
 
@@ -13,93 +10,104 @@ let selectedIds = new Set();
 
 // ===== 初始化 =====
 document.addEventListener('DOMContentLoaded', () => {
-    // 始终显示登录页，隐藏管理界面
     document.querySelector('.admin-container').style.display = 'none';
     document.getElementById('login-overlay').style.display = 'flex';
     document.getElementById('login-password').focus();
 });
 
 // ===== 登录逻辑 =====
-function handleLogin() {
+async function handleLogin() {
     const input = document.getElementById('login-password').value;
     const errorEl = document.getElementById('login-error');
-    const savedPwd = localStorage.getItem(PASSWORD_KEY);
-    const pwdChanged = localStorage.getItem(PWD_CHANGED_KEY) === 'true';
 
     if (!input) {
         errorEl.textContent = '请输入密码';
         return;
     }
 
-    // 判断密码是否正确
-    let valid = false;
-    if (pwdChanged && savedPwd) {
-        // 已修改过密码：只认修改后的密码
-        valid = (input === savedPwd);
-    } else {
-        // 未修改过：认初始密码或已设置的密码
-        valid = (input === DEFAULT_PASSWORD) || (savedPwd && input === savedPwd);
+    try {
+        const sb = getSupabase();
+
+        // 从 Supabase 获取密码和修改标记
+        const { data: pwdRow } = await sb
+            .from('admin_settings')
+            .select('value')
+            .eq('key', 'admin_password')
+            .maybeSingle();
+
+        const { data: changedRow } = await sb
+            .from('admin_settings')
+            .select('value')
+            .eq('key', 'pwd_changed')
+            .maybeSingle();
+
+        const savedPwd = pwdRow ? pwdRow.value : null;
+        const pwdChanged = changedRow ? changedRow.value === 'true' : false;
+
+        let valid = false;
+        if (pwdChanged && savedPwd) {
+            valid = (input === savedPwd);
+        } else {
+            valid = (input === DEFAULT_PASSWORD) || (savedPwd && input === savedPwd);
+        }
+
+        if (!valid) {
+            errorEl.textContent = '密码错误，请重试';
+            shakeInput('login-password');
+            return;
+        }
+
+        errorEl.textContent = '';
+
+        if (!pwdChanged) {
+            document.getElementById('login-form').style.display = 'none';
+            document.getElementById('change-pwd-form').style.display = 'block';
+            document.getElementById('new-password').focus();
+            return;
+        }
+
+        enterAdmin();
+    } catch (err) {
+        console.error('Login error:', err);
+        // 回退到默认密码验证
+        if (input === DEFAULT_PASSWORD) {
+            enterAdmin();
+        } else {
+            errorEl.textContent = '登录失败，请重试';
+        }
     }
-
-    if (!valid) {
-        errorEl.textContent = '密码错误，请重试';
-        shakeInput('login-password');
-        return;
-    }
-
-    errorEl.textContent = '';
-
-    // 如果还没修改过初始密码，引导修改
-    if (!pwdChanged) {
-        document.getElementById('login-form').style.display = 'none';
-        document.getElementById('change-pwd-form').style.display = 'block';
-        document.getElementById('new-password').focus();
-        return;
-    }
-
-    // 已修改过密码，直接进入
-    enterAdmin();
 }
 
 // ===== 修改密码 =====
-function handleChangePwd() {
+async function handleChangePwd() {
     const newPwd = document.getElementById('new-password').value;
     const confirmPwd = document.getElementById('confirm-password').value;
     const errorEl = document.getElementById('change-pwd-error');
 
-    if (!newPwd) {
-        errorEl.textContent = '请输入新密码';
-        return;
-    }
-    if (newPwd.length < 6) {
-        errorEl.textContent = '密码长度至少6位';
-        return;
-    }
-    if (newPwd === DEFAULT_PASSWORD) {
-        errorEl.textContent = '新密码不能与初始密码相同';
-        return;
-    }
-    if (newPwd !== confirmPwd) {
-        errorEl.textContent = '两次输入的密码不一致';
-        return;
-    }
+    if (!newPwd) { errorEl.textContent = '请输入新密码'; return; }
+    if (newPwd.length < 6) { errorEl.textContent = '密码长度至少6位'; return; }
+    if (newPwd === DEFAULT_PASSWORD) { errorEl.textContent = '新密码不能与初始密码相同'; return; }
+    if (newPwd !== confirmPwd) { errorEl.textContent = '两次输入的密码不一致'; return; }
 
-    // 保存新密码，标记已修改
-    localStorage.setItem(PASSWORD_KEY, newPwd);
-    localStorage.setItem(PWD_CHANGED_KEY, 'true');
-
-    enterAdmin();
+    try {
+        const sb = getSupabase();
+        await sb.from('admin_settings').upsert({ key: 'admin_password', value: newPwd, updated_at: new Date().toISOString() });
+        await sb.from('admin_settings').upsert({ key: 'pwd_changed', value: 'true', updated_at: new Date().toISOString() });
+        enterAdmin();
+    } catch (err) {
+        console.error('Change password error:', err);
+        errorEl.textContent = '保存密码失败，请重试';
+    }
 }
 
 // ===== 进入管理后台 =====
-function enterAdmin() {
+async function enterAdmin() {
     document.getElementById('login-overlay').style.display = 'none';
     document.querySelector('.admin-container').style.display = 'flex';
 
-    // 初始化数据
-    loadCodes();
+    await loadCodes();
     if (allCodes.length === 0) {
-        initializeCodes(100);
+        await initializeCodes(100);
     }
     refreshAll();
     showToast('登录成功', 'success');
@@ -111,17 +119,30 @@ function shakeInput(id) {
     setTimeout(() => { el.style.animation = ''; }, 500);
 }
 
-// ===== 数据加载/保存 =====
-function loadCodes() {
-    const data = localStorage.getItem(STORAGE_KEY);
-    allCodes = data ? JSON.parse(data) : [];
+// ===== 数据加载/保存（Supabase） =====
+async function loadCodes() {
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb
+            .from('download_codes')
+            .select('*')
+            .order('created_at', { ascending: false });
+        if (error) throw error;
+        allCodes = (data || []).map(row => ({
+            id: row.id,
+            code: row.code,
+            status: row.status,
+            createdAt: row.created_at,
+            usedAt: row.used_at,
+            tag: row.tag || ''
+        }));
+    } catch (err) {
+        console.error('Load codes error:', err);
+        allCodes = [];
+    }
 }
 
-function saveCodes() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(allCodes));
-}
-
-// ===== 生成下载码（复用主站算法） =====
+// ===== 生成下载码算法 =====
 function generateCode() {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let middle = '';
@@ -146,24 +167,33 @@ function generateUniqueCode(existingSet) {
     return code;
 }
 
-// ===== 初始化100个下载码 =====
-function initializeCodes(count) {
+// ===== 初始化下载码 =====
+async function initializeCodes(count) {
     const existingSet = new Set(allCodes.map(c => c.code));
     const now = new Date().toISOString();
+    const rows = [];
     for (let i = 0; i < count; i++) {
         const code = generateUniqueCode(existingSet);
         existingSet.add(code);
-        allCodes.push({
-            id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i,
+        rows.push({
             code: code,
-            status: 'unused', // unused, used, disabled
-            createdAt: now,
-            usedAt: null,
-            tag: '初始批次'
+            status: 'unused',
+            tag: '初始批次',
+            created_at: now,
+            used_at: null
         });
     }
-    saveCodes();
-    showToast('已初始化 100 个下载码', 'success');
+
+    try {
+        const sb = getSupabase();
+        const { error } = await sb.from('download_codes').insert(rows);
+        if (error) throw error;
+        await loadCodes();
+        showToast('已初始化 100 个下载码', 'success');
+    } catch (err) {
+        console.error('Initialize codes error:', err);
+        showToast('初始化失败', 'error');
+    }
 }
 
 // ===== 刷新所有视图 =====
@@ -172,7 +202,7 @@ function refreshAll() {
     filterCodes();
 }
 
-// ===== 统计概览（轻量） =====
+// ===== 统计概览 =====
 function updateStats() {
     const total = allCodes.length;
     const unused = allCodes.filter(c => c.status === 'unused').length;
@@ -187,7 +217,7 @@ function updateStats() {
 
 // ===== 排序 =====
 let sortField = 'createdAt';
-let sortDir = 'desc'; // asc | desc
+let sortDir = 'desc';
 
 function toggleSort(field) {
     if (sortField === field) {
@@ -336,71 +366,111 @@ function toggleSelectAll() {
     renderCodesTable();
 }
 
-// ===== 状态操作 =====
-function markUsed(id) {
-    const code = allCodes.find(c => c.id === id);
-    if (code) {
-        code.status = 'used';
-        code.usedAt = new Date().toISOString();
-        saveCodes();
+// ===== 状态操作（Supabase） =====
+async function markUsed(id) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb
+            .from('download_codes')
+            .update({ status: 'used', used_at: new Date().toISOString() })
+            .eq('id', id);
+        if (error) throw error;
+        const code = allCodes.find(c => c.id === id);
+        if (code) { code.status = 'used'; code.usedAt = new Date().toISOString(); }
         refreshAll();
-        showToast(`${code.code} 已标记为已使用`, 'success');
+        showToast(`${code?.code || ''} 已标记为已使用`, 'success');
+    } catch (err) {
+        console.error('markUsed error:', err);
+        showToast('操作失败', 'error');
     }
 }
 
-function disableCode(id) {
-    const code = allCodes.find(c => c.id === id);
-    if (code) {
-        code.status = 'disabled';
-        saveCodes();
+async function disableCode(id) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb
+            .from('download_codes')
+            .update({ status: 'disabled' })
+            .eq('id', id);
+        if (error) throw error;
+        const code = allCodes.find(c => c.id === id);
+        if (code) code.status = 'disabled';
         refreshAll();
-        showToast(`${code.code} 已禁用`, 'warning');
+        showToast(`${code?.code || ''} 已禁用`, 'warning');
+    } catch (err) {
+        console.error('disableCode error:', err);
+        showToast('操作失败', 'error');
     }
 }
 
-function enableCode(id) {
-    const code = allCodes.find(c => c.id === id);
-    if (code) {
-        code.status = 'unused';
-        code.usedAt = null;
-        saveCodes();
+async function enableCode(id) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb
+            .from('download_codes')
+            .update({ status: 'unused', used_at: null })
+            .eq('id', id);
+        if (error) throw error;
+        const code = allCodes.find(c => c.id === id);
+        if (code) { code.status = 'unused'; code.usedAt = null; }
         refreshAll();
-        showToast(`${code.code} 已重新启用`, 'success');
+        showToast(`${code?.code || ''} 已重新启用`, 'success');
+    } catch (err) {
+        console.error('enableCode error:', err);
+        showToast('操作失败', 'error');
     }
 }
 
-function resetCode(id) {
-    const code = allCodes.find(c => c.id === id);
-    if (code) {
-        code.status = 'unused';
-        code.usedAt = null;
-        saveCodes();
+async function resetCode(id) {
+    try {
+        const sb = getSupabase();
+        const { error } = await sb
+            .from('download_codes')
+            .update({ status: 'unused', used_at: null })
+            .eq('id', id);
+        if (error) throw error;
+        const code = allCodes.find(c => c.id === id);
+        if (code) { code.status = 'unused'; code.usedAt = null; }
         refreshAll();
-        showToast(`${code.code} 已重置为未使用`, 'success');
+        showToast(`${code?.code || ''} 已重置为未使用`, 'success');
+    } catch (err) {
+        console.error('resetCode error:', err);
+        showToast('操作失败', 'error');
     }
 }
 
-function batchDisable() {
+async function batchDisable() {
     if (selectedIds.size === 0) {
         showToast('请先选择下载码', 'warning');
         return;
     }
     if (!confirm(`确定禁用选中的 ${selectedIds.size} 个下载码？`)) return;
 
-    selectedIds.forEach(id => {
-        const code = allCodes.find(c => c.id === id);
-        if (code && code.status === 'unused') {
-            code.status = 'disabled';
-        }
-    });
-    saveCodes();
-    selectedIds.clear();
-    refreshAll();
-    showToast('批量禁用完成', 'success');
+    try {
+        const sb = getSupabase();
+        const ids = Array.from(selectedIds);
+        const { error } = await sb
+            .from('download_codes')
+            .update({ status: 'disabled' })
+            .in('id', ids)
+            .eq('status', 'unused');
+        if (error) throw error;
+
+        ids.forEach(id => {
+            const code = allCodes.find(c => c.id === id);
+            if (code && code.status === 'unused') code.status = 'disabled';
+        });
+        selectedIds.clear();
+        refreshAll();
+        showToast('批量禁用完成', 'success');
+    } catch (err) {
+        console.error('batchDisable error:', err);
+        showToast('批量操作失败', 'error');
+    }
 }
 
 // ===== 生成新下载码 =====
-function generateNewCodes() {
+async function generateNewCodes() {
     const count = parseInt(document.getElementById('gen-count').value) || 20;
     const tag = document.getElementById('gen-tag').value.trim() || '';
 
@@ -411,41 +481,47 @@ function generateNewCodes() {
 
     const existingSet = new Set(allCodes.map(c => c.code));
     const now = new Date().toISOString();
-    const newCodes = [];
+    const rows = [];
 
     for (let i = 0; i < count; i++) {
         const code = generateUniqueCode(existingSet);
         existingSet.add(code);
-        const entry = {
-            id: Date.now().toString(36) + Math.random().toString(36).substr(2, 5) + i,
+        rows.push({
             code: code,
             status: 'unused',
-            createdAt: now,
-            usedAt: null,
-            tag: tag || `批次 ${new Date().toLocaleDateString()}`
-        };
-        allCodes.push(entry);
-        newCodes.push(entry);
+            tag: tag || `批次 ${new Date().toLocaleDateString()}`,
+            created_at: now,
+            used_at: null
+        });
     }
 
-    saveCodes();
-    refreshAll();
+    try {
+        const sb = getSupabase();
+        const { data, error } = await sb.from('download_codes').insert(rows).select();
+        if (error) throw error;
 
-    // 展示结果
-    const resultDiv = document.getElementById('gen-result');
-    resultDiv.style.display = 'block';
-    resultDiv.innerHTML = `
-        <div class="gen-success">
-            <p>✅ 成功生成 <strong>${count}</strong> 个下载码</p>
-            <div class="gen-codes-preview">
-                ${newCodes.slice(0, 10).map(c => `<code>${c.code}</code>`).join('')}
-                ${count > 10 ? `<span class="text-dim">... 等共 ${count} 个</span>` : ''}
+        const newCodes = (data || rows).map(r => ({ code: r.code }));
+        await loadCodes();
+        refreshAll();
+
+        const resultDiv = document.getElementById('gen-result');
+        resultDiv.style.display = 'block';
+        resultDiv.innerHTML = `
+            <div class="gen-success">
+                <p>✅ 成功生成 <strong>${count}</strong> 个下载码</p>
+                <div class="gen-codes-preview">
+                    ${newCodes.slice(0, 10).map(c => `<code>${c.code}</code>`).join('')}
+                    ${count > 10 ? `<span class="text-dim">... 等共 ${count} 个</span>` : ''}
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="copyNewCodes('${newCodes.map(c=>c.code).join(',')}')">📋 复制全部新码</button>
             </div>
-            <button class="btn btn-outline btn-sm" onclick="copyNewCodes('${newCodes.map(c=>c.code).join(',')}')">📋 复制全部新码</button>
-        </div>
-    `;
+        `;
 
-    showToast(`成功生成 ${count} 个下载码`, 'success');
+        showToast(`成功生成 ${count} 个下载码`, 'success');
+    } catch (err) {
+        console.error('Generate codes error:', err);
+        showToast('生成失败', 'error');
+    }
 }
 
 function copyNewCodes(codesStr) {
@@ -457,6 +533,10 @@ function copyNewCodes(codesStr) {
 
 // ===== 导出 =====
 function exportCodes() {
+    if (filteredCodes.length === 0) {
+        showToast('没有数据可导出', 'warning');
+        return;
+    }
     const data = filteredCodes.map(c => ({
         下载码: c.code,
         状态: c.status === 'unused' ? '未使用' : c.status === 'used' ? '已使用' : '已禁用',
@@ -493,30 +573,42 @@ function importData() {
     document.getElementById('import-file').click();
 }
 
-function handleImport(event) {
+async function handleImport(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = (e) => {
+    reader.onload = async (e) => {
         try {
             const data = JSON.parse(e.target.result);
             if (!Array.isArray(data)) throw new Error('格式错误');
             if (!confirm(`确定导入 ${data.length} 条数据？将与现有数据合并。`)) return;
 
             const existingSet = new Set(allCodes.map(c => c.code));
-            let imported = 0;
+            const rows = [];
             data.forEach(item => {
                 if (item.code && !existingSet.has(item.code)) {
-                    allCodes.push(item);
                     existingSet.add(item.code);
-                    imported++;
+                    rows.push({
+                        code: item.code,
+                        status: item.status || 'unused',
+                        tag: item.tag || '',
+                        created_at: item.createdAt || item.created_at || new Date().toISOString(),
+                        used_at: item.usedAt || item.used_at || null
+                    });
                 }
             });
 
-            saveCodes();
+            if (rows.length > 0) {
+                const sb = getSupabase();
+                const { error } = await sb.from('download_codes').insert(rows);
+                if (error) throw error;
+            }
+
+            await loadCodes();
             refreshAll();
-            showToast(`成功导入 ${imported} 条新数据`, 'success');
+            showToast(`成功导入 ${rows.length} 条新数据`, 'success');
         } catch (err) {
+            console.error('Import error:', err);
             showToast('导入失败：数据格式错误', 'error');
         }
     };
@@ -535,34 +627,39 @@ function downloadFile(filename, content, type) {
 }
 
 // ===== 设置 =====
-function savePassword() {
+async function savePassword() {
     const pwd = document.getElementById('admin-password').value.trim();
-    if (!pwd) {
-        showToast('请输入新密码', 'warning');
-        return;
+    if (!pwd) { showToast('请输入新密码', 'warning'); return; }
+    if (pwd.length < 6) { showToast('密码长度至少6位', 'warning'); return; }
+    if (pwd === DEFAULT_PASSWORD) { showToast('不能使用初始密码', 'warning'); return; }
+
+    try {
+        const sb = getSupabase();
+        await sb.from('admin_settings').upsert({ key: 'admin_password', value: pwd, updated_at: new Date().toISOString() });
+        await sb.from('admin_settings').upsert({ key: 'pwd_changed', value: 'true', updated_at: new Date().toISOString() });
+        showToast('密码已更新', 'success');
+        document.getElementById('admin-password').value = '';
+    } catch (err) {
+        console.error('Save password error:', err);
+        showToast('密码更新失败', 'error');
     }
-    if (pwd.length < 6) {
-        showToast('密码长度至少6位', 'warning');
-        return;
-    }
-    if (pwd === DEFAULT_PASSWORD) {
-        showToast('不能使用初始密码', 'warning');
-        return;
-    }
-    localStorage.setItem(PASSWORD_KEY, pwd);
-    localStorage.setItem(PWD_CHANGED_KEY, 'true');
-    showToast('密码已更新', 'success');
-    document.getElementById('admin-password').value = '';
 }
 
-function resetAllData() {
+async function resetAllData() {
     if (!confirm('确定要重置所有数据？此操作不可恢复！')) return;
     if (!confirm('再次确认：所有下载码数据将被永久删除！')) return;
 
-    allCodes = [];
-    saveCodes();
-    refreshAll();
-    showToast('所有数据已重置', 'warning');
+    try {
+        const sb = getSupabase();
+        const { error } = await sb.from('download_codes').delete().neq('id', '00000000-0000-0000-0000-000000000000');
+        if (error) throw error;
+        allCodes = [];
+        refreshAll();
+        showToast('所有数据已重置', 'warning');
+    } catch (err) {
+        console.error('Reset error:', err);
+        showToast('重置失败', 'error');
+    }
 }
 
 // ===== Tab 切换 =====
@@ -618,25 +715,3 @@ function showToast(message, type = 'info') {
         setTimeout(() => toast.remove(), 300);
     }, 3000);
 }
-
-// ===== 同步主站验证：暴露给主站调用 =====
-// 主站验证下载码时会调用此函数标记已使用
-window.markCodeAsUsed = function(codeStr) {
-    loadCodes();
-    const found = allCodes.find(c => c.code === codeStr.trim().toUpperCase() && c.status === 'unused');
-    if (found) {
-        found.status = 'used';
-        found.usedAt = new Date().toISOString();
-        saveCodes();
-        return true;
-    }
-    return false;
-};
-
-// 主站验证时检查下载码是否有效（未被禁用且未使用或已使用）
-window.isCodeValid = function(codeStr) {
-    loadCodes();
-    const found = allCodes.find(c => c.code === codeStr.trim().toUpperCase());
-    if (!found) return 'not_found';
-    return found.status; // unused, used, disabled
-};
